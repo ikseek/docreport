@@ -1,3 +1,3 @@
-from docreport.cli import main
+from docstatereport.cli import main
 
 exit(main())
