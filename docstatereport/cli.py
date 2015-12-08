@@ -8,6 +8,7 @@ import sys
 
 from .formats import produce_csv, produce_html
 from .report import ScriptRefReport, ManualReport
+from .version import __version__
 
 REPORT_FORMATS = {'csv': produce_csv, 'html': produce_html}
 
@@ -33,6 +34,7 @@ def get_args():
                         default='html', help='report format')
     parser.add_argument('OUTFILE', nargs='?', type=FileType('w'),
                         default=sys.stdout, help='output file name')
+    parser.add_argument('--version', action='version', version=__version__)
     args = parser.parse_args()
     if not args.scriptref and not args.manual:
         parser.error("Must request at least one report")
