@@ -3,11 +3,11 @@ import subprocess
 
 
 class Mercurial:
-    def __init__(self):
+    def __init__(self, repo):
         self.server = subprocess.Popen(
             ['hg', '--config', 'ui.interactive=True', 'serve', '--cmdserver',
              'pipe'],
-            stdin=subprocess.PIPE, stdout=subprocess.PIPE)
+            stdin=subprocess.PIPE, stdout=subprocess.PIPE, cwd=repo)
         hello = self.readchannel()
 
     def __del__(self):
@@ -25,10 +25,11 @@ class Mercurial:
         self.server.stdin.write(data)
         self.server.stdin.flush()
 
-    def runcommand(self, data):
+    def runcommand(self, *data):
         self.server.stdin.write('runcommand\n')
         self.writeblock('\0'.join(data))
-        return self.receive_response()
+        response = self.receive_response()
+        return "".join(response).split('\n')
 
     def receive_response(self):
         errors = []
@@ -46,14 +47,3 @@ class Mercurial:
                 errors.append(val)
             else:
                 raise Exception("unexpected channel:", channel, val)
-
-    def manifest(self, revision):
-        return self.runcommand(['manifest', '-r', revision])
-
-    def parent(self, revision, file_name):
-        results = self.runcommand(['parent', '-r', revision, file_name, '-T',
-                                   '{author}\n{date|shortdate}'])
-        results = list(results)
-        splitted = results[0].split('\n')
-        return {'file_name': file_name, 'author': splitted[0],
-                'date': splitted[1]}
